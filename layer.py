@@ -22,12 +22,3 @@ class Layer():
         
         if self.activation is 'sig':
             self.activations = np.vectorize(sigmoid)(activations)
-        
-        
-L = Layer(4, 2, 'sig')
-input_L = Layer(8, 4, 'sig')
-input_L.activations = np.random.rand(4)
-
-L.feedforward(input_L)
-
-print(L.activations)
