@@ -17,9 +17,11 @@ class NeuralNetwork():
         self.layers.append(layer)
         
         
-    def calc_error(self):
-        pass
-    
+    def total_error(self, expected, predicted):
+        error = np.subtract(expected, predicted)
+        squared = .5*np.square(error)
+        total_error = np.sum(squared)
+        
         
     def feedforward(self, inputs):
         self.layers[0].activations = inputs
@@ -40,4 +42,3 @@ class NeuralNetwork():
 # output = N.feedforward(np.random.rand(16))
 
 # print(output)
-
