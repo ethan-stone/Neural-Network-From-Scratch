@@ -19,8 +19,9 @@ class NeuralNetwork():
         
     def total_error(self, expected, predicted):
         error = np.subtract(expected, predicted)
-        squared = .5*np.square(error)
+        squared = .5 * np.square(error)
         total_error = np.sum(squared)
+        return total_error
         
         
     def feedforward(self, inputs):
@@ -31,8 +32,24 @@ class NeuralNetwork():
         
         output = self.layers[len(self.layers)-1].activations
         
-        return output # return the output after the inputs feedforward throught the netowrk
+        return output # return the output after the inputs feedforward through the netowrk
     
+    
+    def delta_error_delta_out(self, expected, predicted):
+        return np.subtract(predicted, expected)
+    
+    
+    def delta_out_delta_net(self, output):
+        return np.multiply(np.subtract(1, output))
+    
+    
+    def delta_net_delta_weights(self, index):
+        return layers[i].activations
+    
+    
+    def backprop(self, expected, predicted, index):
+        pass
+            
 
 # N = NeuralNetwork()
 # N.add_layer(Layer(16))
