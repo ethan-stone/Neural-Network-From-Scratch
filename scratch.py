@@ -1,6 +1,10 @@
 import numpy as np
 
-a = np.array([1, 2, 3, 4, 5, 6])
+A = np.array([1, 2, 3, 4, 5, 6])
 b = np.array([1, 2, 3, 4, 5, 6])
 
-print(np.all(a==b))
+max_value = np.amax(A)
+
+a = np.array([0 if a < max_value else 1 for a in A])
+
+print(a)

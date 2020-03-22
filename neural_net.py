@@ -9,6 +9,7 @@ class NeuralNetwork():
         self.layers = []
         self.eta = eta
         
+        
     def add_layer(self, layer):
         if len(self.layers) > 0:
             input_dim = self.layers[len(self.layers)-1].output_dim
@@ -81,7 +82,7 @@ class NeuralNetwork():
                 self.feedforward(data_i)
                 self.backprop(label_i)
                 i+=1
-            print("Epoch " + str(epoch))
+            print("Epoch " + str(epoch + 1))
         print("Finished training!")
         
     
@@ -94,8 +95,10 @@ class NeuralNetwork():
         print("Evaluating...")
         for i in range(0, len(X)):
             predicted = self.predict(X[i])
-            error = self.error(y[i], predicted)
-            if error < .05:
+            max_value = np.amax(predicted)
+            predicted = np.array([0 if a < max_value else 1 for a in predicted])
+            
+            if np.array_equal(predicted, y[i]):
                 correct += 1
         print("Finished evaluating!")
         return correct/len(X)
@@ -114,17 +117,11 @@ X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-N = NeuralNetwork()
+N = NeuralNetwork(eta=.05)
 N.add_layer(InputLayer(784))
 N.add_layer(Layer(10, activation='sig'))
 
-N.fit(X_train, y_train, epochs=10)
-
-for i in range(0, 100):
-    predicted = N.predict(X_test[i])
-    print(np.round(predicted))
-    # print(y_test[i])
-print("Finished evaluating!")
+N.fit(X_train, y_train, epochs=5)
 
 print(N.evaluate(X_test, y_test))
 
