@@ -14,16 +14,17 @@ class Layer():
         self.output_dim = output_dim
         self.activations = np.array([])
         self.activation = activation
-        self.weights = np.random.rand(self.output_dim, self.input_dim)/1000#(self.input_dim + self.output_dim)
-        self.biases = np.random.rand(output_dim)/100#(self.input_dim + self.output_dim)
+        self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
+        self.biases = np.random.randn(output_dim)/np.sqrt(self.input_dim + self.output_dim)
         
         
     def __str__(self):
         return f"Layer -> input_dim : {self.input_dim}, output_dim : {self.output_dim}"
     
     
-    def update_weights(self, adjustments):
-        self.weights = self.weights - adjustments
+    def update_weights_biases(self, delta_weights, delta_biases, eta):
+        self.weights = self.weights - eta * delta_weights
+        self.biases = self.biases - eta * delta_biases
         
         
     def feedforward(self, input_layer):
@@ -42,7 +43,7 @@ class Layer():
             
     def update_dim(self, input_dim):
         self.input_dim = input_dim
-        self.weights = np.random.rand(self.output_dim, self.input_dim)/1000#(self.input_dim + self.output_dim)
+        self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
 
 
 class InputLayer(Layer):

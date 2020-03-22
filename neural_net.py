@@ -2,10 +2,12 @@ import numpy as np
 from layer import Layer, InputLayer
 from sklearn.datasets import fetch_openml
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from activations import sigmoid
 
 class NeuralNetwork():
-    def __init__(self):
+    def __init__(self, eta=.01):
         self.layers = []
+        self.eta = eta
         
     def add_layer(self, layer):
         if len(self.layers) > 0:
@@ -38,8 +40,8 @@ class NeuralNetwork():
         return np.subtract(predicted, expected)
     
     
-    def delta_out_delta_net(self, output):
-        return np.multiply(output, np.subtract(1, output))
+    def delta_out_delta_net(self, x):
+        return sigmoid(x) * (1 - sigmoid(x))
     
     
     def delta_net_delta_weights(self, i):
@@ -66,7 +68,7 @@ class NeuralNetwork():
             
             c = a_prime * b
     
-            layer_i.update_weights(c)
+            layer_i.update_weights_biases(c, a, self.eta)
             
             
     def fit(self, data, labels, epochs=1):
@@ -94,9 +96,9 @@ class NeuralNetwork():
             predicted = self.predict(X[i])
             error = self.error(y[i], predicted)
             if error < .05:
-                count += 1
+                correct += 1
         print("Finished evaluating!")
-        return correct
+        return correct/len(X)
             
 le = LabelEncoder()
 ohe = OneHotEncoder(sparse=False)
@@ -124,6 +126,6 @@ for i in range(0, 100):
     # print(y_test[i])
 print("Finished evaluating!")
 
-# print(N.evaluate(X_test, y_test))
+print(N.evaluate(X_test, y_test))
 
 
