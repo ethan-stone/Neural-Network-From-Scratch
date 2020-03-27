@@ -2,12 +2,13 @@ import numpy as np
 from layer import Layer, InputLayer
 from sklearn.datasets import fetch_openml
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from activations import sigmoid
+from activations import *
 
 class NeuralNetwork():
-    def __init__(self, eta=.01):
+    def __init__(self, eta=.01, alpha=.9):
         self.layers = []
         self.eta = eta
+        self.alpha = alpha
         
         
     def add_layer(self, layer):
@@ -23,10 +24,9 @@ class NeuralNetwork():
         squared = .5 * np.square(error)
         error = np.sum(squared)
         return error
-        
-        
+    
+
     def feedforward(self, inputs):
-        # print("feedforward")
         self.layers[0].activations = inputs
         for i in range(1, len(self.layers)):
             layer_i = self.layers[i]
@@ -34,55 +34,60 @@ class NeuralNetwork():
         
         output = self.layers[len(self.layers)-1].activations
         
-        return output # return the output after the inputs feedforward through the netowrk
+        return output # return the output after the inputs feedforward through the network
     
     
     def delta_error_delta_out(self, expected, predicted):
         return np.subtract(predicted, expected)
     
     
-    def delta_out_delta_net(self, x):
-        return sigmoid(x) * (1 - sigmoid(x))
-    
-    
     def delta_net_delta_weights(self, i):
         return self.layers[i-1].activations
     
     
-    def backprop(self, expected):
+    def calc_layer_errors(self, e_out):
+        for i in range(len(self.layers)-1, 0, -1):
+            layer_i = self.layers[i]
+            if i == len(self.layers)-1:
+                layer_i.error = e_out
+            else:
+                prev_layer = self.layers[i+1]
+                prev_weights = prev_layer.weights
+                prev_errors = prev_layer.error
+                sum_weights = prev_weights.sum(axis=1)
+                a = prev_weights.transpose()
+                
+                b = np.dot(a, prev_errors)
+                
+                layer_i.error = b
+    
+    
+    def backprop(self):
         for i in range(len(self.layers)-1, 0, -1):
             layer_i = self.layers[i]
             predicted_i = layer_i.activations
-            # print(predicted_i)
-            delta_error_delta_out = self.delta_error_delta_out(expected, predicted_i)
-            # print(delta_error_delta_out)
-            delta_out_delta_net = self.delta_out_delta_net(predicted_i)
-            # print(delta_out_delta_net)
-            delta_net_delta_weights = self.delta_net_delta_weights(i)
+            error = layer_i.error
             
-            a = delta_error_delta_out * delta_out_delta_net
-            # print(a)
-            
-            a_prime = a.reshape((-1, 1))
-            
-            b = delta_net_delta_weights
-            
-            c = a_prime * b
-    
-            layer_i.update_weights_biases(c, a, self.eta)
+            delta_weights = np.dot((-error * sigmoid_der(predicted_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
+            layer_i.add_gradient(delta_weights)
+            delta_biases = -error * sigmoid_der(predicted_i)
+            # layer_i.rmsprop(delta_weights, delta_biases, self.eta, self.alpha)
+            # layer_i.adagrad(delta_weights, delta_biases, self.eta)
+            layer_i.update_weights_biases(delta_weights, delta_biases, self.eta)
             
             
     def fit(self, data, labels, epochs=1):
         print("Training...")
         for epoch in range(epochs):
             i = 0
+            print("Epoch " + str(epoch + 1))
             while i < len(data):
                 data_i = data[i]
                 label_i = labels[i]
-                self.feedforward(data_i)
-                self.backprop(label_i)
+                out = self.feedforward(data_i)
+                self.calc_layer_errors(label_i - out)
+                self.backprop()
                 i+=1
-            print("Epoch " + str(epoch + 1))
         print("Finished training!")
         
     
@@ -102,6 +107,7 @@ class NeuralNetwork():
                 correct += 1
         print("Finished evaluating!")
         return correct/len(X)
+    
             
 le = LabelEncoder()
 ohe = OneHotEncoder(sparse=False)
@@ -117,11 +123,13 @@ X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-N = NeuralNetwork(eta=.05)
+N = NeuralNetwork()
 N.add_layer(InputLayer(784))
+N.add_layer(Layer(16, activation='sig'))
+N.add_layer(Layer(16, activation='sig'))
 N.add_layer(Layer(10, activation='sig'))
 
-N.fit(X_train, y_train, epochs=5)
+N.fit(X_train, y_train, epochs=10)
 
 print(N.evaluate(X_test, y_test))
 

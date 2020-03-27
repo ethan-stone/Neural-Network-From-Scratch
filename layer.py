@@ -15,16 +15,40 @@ class Layer():
         self.activations = np.array([])
         self.activation = activation
         self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
-        self.biases = np.random.randn(output_dim)/np.sqrt(self.input_dim + self.output_dim)
+        self.biases = np.zeros(output_dim)
+        self.error = np.zeros(output_dim)
+        self.gradients = np.zeros((self.output_dim, self.input_dim))
+        self.epsilon = np.random.rand()/(10*(10**7))
+        self.prev_E = 0
         
         
     def __str__(self):
         return f"Layer -> input_dim : {self.input_dim}, output_dim : {self.output_dim}"
     
+
+    def add_gradient(self, gradient):
+        self.gradients = self.gradients + gradient**2
+        
+    
+    def E(self, x, alpha):
+        E = (1-alpha)*x**2 + alpha*self.prev_E
+        self.prev_E = E
+        return E
+        
+        
+    def rmsprop(self, delta_weights, delta_biases, eta, alpha):
+        self.weights = self.weights - (eta*delta_weights)/np.sqrt(self.epsilon + self.E(delta_weights, alpha))
+        self.biases = self.biases - (eta * delta_biases)
+        
+
+    def adagrad(self, delta_weights, delta_biases, eta):
+        self.weights = self.weights - (eta * delta_weights)/np.sqrt(self.gradients + self.epsilon)
+        self.biases = self.biases - (eta * delta_biases)
+    
     
     def update_weights_biases(self, delta_weights, delta_biases, eta):
-        self.weights = self.weights - eta * delta_weights
-        self.biases = self.biases - eta * delta_biases
+        self.weights = self.weights - (eta * delta_weights)
+        self.biases = self.biases - (eta * delta_biases)
         
         
     def feedforward(self, input_layer):
@@ -32,11 +56,9 @@ class Layer():
         
         dot_product = np.dot(self.weights, input_activations)
         activations = np.add(dot_product, self.biases)
-        # print(activations)
         
         if self.activation is 'sig':
-            self.activations = np.vectorize(sigmoid)(activations)
-            # print(self.activations)
+            self.activations = sigmoid(activations)
         elif self.activation is 'none':
             self.activations = activations
             
@@ -44,6 +66,7 @@ class Layer():
     def update_dim(self, input_dim):
         self.input_dim = input_dim
         self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
+        self.gradients = np.zeros((self.output_dim, self.input_dim))
 
 
 class InputLayer(Layer):
