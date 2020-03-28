@@ -14,7 +14,7 @@ class Layer():
         self.output_dim = output_dim
         self.activations = np.array([])
         self.activation = activation
-        self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
+        self.weights = np.random.randn(self.output_dim, self.input_dim)
         self.biases = np.zeros(output_dim)
         self.error = np.zeros(output_dim)
         self.gradients = np.zeros((self.output_dim, self.input_dim))
@@ -27,6 +27,16 @@ class Layer():
         
     def __str__(self):
         return f"Layer -> input_dim : {self.input_dim}, output_dim : {self.output_dim}"
+    
+    
+    def update_dim(self, input_dim):
+        self.input_dim = input_dim
+        if self.activation is "sigmoid":
+            self.weights = np.random.randn(self.output_dim, self.input_dim)*(4*np.sqrt(6/(self.input_dim + self.output_dim)))
+        elif self.activation is "relu":
+            self.weights = np.random.randn(self.output_dim, self.input_dim)*(np.sqrt(2)*np.sqrt(6/(self.input_dim + self.output_dim)))
+        self.gradients = np.zeros((self.output_dim, self.input_dim))
+        self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
     
 
     def add_gradient(self, gradient):
@@ -59,7 +69,7 @@ class Layer():
         self.biases = self.biases - (eta * delta_biases)
     
     
-    def update_weights_biases(self, delta_weights, delta_biases, eta):
+    def grad(self, delta_weights, delta_biases, eta):
         self.weights = self.weights - (eta * delta_weights)
         self.biases = self.biases - (eta * delta_biases)
         
@@ -74,13 +84,6 @@ class Layer():
             self.activations = sigmoid(activations)
         elif self.activation is 'none':
             self.activations = activations
-            
-            
-    def update_dim(self, input_dim):
-        self.input_dim = input_dim
-        self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
-        self.gradients = np.zeros((self.output_dim, self.input_dim))
-        self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
 
 
 

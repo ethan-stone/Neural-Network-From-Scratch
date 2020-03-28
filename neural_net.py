@@ -123,11 +123,11 @@ y_test = np.array(y_test)
 
 N = NeuralNetwork(eta=.001, optimizer="adam")
 N.add_layer(InputLayer(784))
-N.add_layer(Layer(16, activation='sig'))
-N.add_layer(Layer(16, activation='sig'))
+N.add_layer(Layer(128, activation='sig'))
+N.add_layer(Layer(32, activation='sig'))
 N.add_layer(Layer(10, activation='sig'))
 
-N.fit(X_train, y_train, epochs=15)
+N.fit(X_train, y_train, epochs=20)
 
 print(N.evaluate(X_test, y_test))
 
