@@ -18,8 +18,11 @@ class Layer():
         self.biases = np.zeros(output_dim)
         self.error = np.zeros(output_dim)
         self.gradients = np.zeros((self.output_dim, self.input_dim))
-        self.epsilon = np.random.rand()/(10*(10**7))
+        self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
         self.prev_E = 0
+        self.prev_m = 0
+        self.prev_v = 0
+        self.t = 1
         
         
     def __str__(self):
@@ -37,12 +40,22 @@ class Layer():
         
         
     def rmsprop(self, delta_weights, delta_biases, eta, alpha):
-        self.weights = self.weights - (eta*delta_weights)/np.sqrt(self.epsilon + self.E(delta_weights, alpha))
+        self.weights = self.weights - (eta * delta_weights)/np.sqrt(self.epsilon + self.E(delta_weights, alpha))
         self.biases = self.biases - (eta * delta_biases)
         
-
-    def adagrad(self, delta_weights, delta_biases, eta):
-        self.weights = self.weights - (eta * delta_weights)/np.sqrt(self.gradients + self.epsilon)
+        
+    def adam(self, delta_weights, delta_biases, beta1, beta2, eta):
+        m = beta1 * self.prev_m + (1 - beta1) * delta_weights
+        v = beta2 * self.prev_v + (1 - beta2) * (delta_weights**2)
+        
+        self.prev_m = m
+        self.prev_v = v
+        
+        m_hat = m/(1 - beta1**self.t)
+        v_hat = v/(1 - beta2**self.t)
+        
+        self.t += 1
+        self.weights = self.weights - (eta * m_hat)/(self.epsilon + np.sqrt(v_hat))
         self.biases = self.biases - (eta * delta_biases)
     
     
@@ -67,6 +80,8 @@ class Layer():
         self.input_dim = input_dim
         self.weights = np.random.randn(self.output_dim, self.input_dim)/np.sqrt(self.input_dim + self.output_dim)
         self.gradients = np.zeros((self.output_dim, self.input_dim))
+        self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
+
 
 
 class InputLayer(Layer):

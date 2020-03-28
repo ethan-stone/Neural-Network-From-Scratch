@@ -5,10 +5,13 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from activations import *
 
 class NeuralNetwork():
-    def __init__(self, eta=.01, alpha=.9):
+    def __init__(self, optimizer="rmsprop", eta=.01, alpha=.9, beta1=.9, beta2=.999):
         self.layers = []
+        self.optimizer = optimizer
         self.eta = eta
         self.alpha = alpha
+        self.beta1 = beta1
+        self.beta2 = beta2
         
         
     def add_layer(self, layer):
@@ -37,14 +40,6 @@ class NeuralNetwork():
         return output # return the output after the inputs feedforward through the network
     
     
-    def delta_error_delta_out(self, expected, predicted):
-        return np.subtract(predicted, expected)
-    
-    
-    def delta_net_delta_weights(self, i):
-        return self.layers[i-1].activations
-    
-    
     def calc_layer_errors(self, e_out):
         for i in range(len(self.layers)-1, 0, -1):
             layer_i = self.layers[i]
@@ -71,9 +66,12 @@ class NeuralNetwork():
             delta_weights = np.dot((-error * sigmoid_der(predicted_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
             layer_i.add_gradient(delta_weights)
             delta_biases = -error * sigmoid_der(predicted_i)
-            # layer_i.rmsprop(delta_weights, delta_biases, self.eta, self.alpha)
-            # layer_i.adagrad(delta_weights, delta_biases, self.eta)
-            layer_i.update_weights_biases(delta_weights, delta_biases, self.eta)
+            if self.optimizer is "adam":
+                layer_i.adam(delta_weights, delta_biases, self.beta1, self.beta2, self.eta)
+            elif self.optimizer is "rmsprop":
+                layer_i.rmsprop(delta_weights, delta_biases, self.eta, self.alpha)
+            elif self.optimizer is "grad":
+                layer_i.grad(delta_weights, delta_biases, self.eta)
             
             
     def fit(self, data, labels, epochs=1):
@@ -123,13 +121,13 @@ X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-N = NeuralNetwork()
+N = NeuralNetwork(eta=.001, optimizer="adam")
 N.add_layer(InputLayer(784))
 N.add_layer(Layer(16, activation='sig'))
 N.add_layer(Layer(16, activation='sig'))
 N.add_layer(Layer(10, activation='sig'))
 
-N.fit(X_train, y_train, epochs=10)
+N.fit(X_train, y_train, epochs=15)
 
 print(N.evaluate(X_test, y_test))
 
