@@ -16,6 +16,7 @@ class Layer():
         self.activation = activation
         self.weights = np.random.randn(self.output_dim, self.input_dim)
         self.biases = np.zeros(output_dim)
+        self.cache = 0
         self.error = np.zeros(output_dim)
         self.gradients = np.zeros((self.output_dim, self.input_dim))
         self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
@@ -31,7 +32,7 @@ class Layer():
     
     def update_dim(self, input_dim):
         self.input_dim = input_dim
-        if self.activation is "sigmoid":
+        if self.activation is "sig":
             self.weights = np.random.randn(self.output_dim, self.input_dim)*(4*np.sqrt(6/(self.input_dim + self.output_dim)))
         elif self.activation is "relu":
             self.weights = np.random.randn(self.output_dim, self.input_dim)*(np.sqrt(2)*np.sqrt(6/(self.input_dim + self.output_dim)))
@@ -79,11 +80,12 @@ class Layer():
         
         dot_product = np.dot(self.weights, input_activations)
         activations = np.add(dot_product, self.biases)
+        self.cache = activations
         
         if self.activation is 'sig':
             self.activations = sigmoid(activations)
-        elif self.activation is 'none':
-            self.activations = activations
+        elif self.activation is 'relu':
+            self.activations = relu(activations)
 
 
 

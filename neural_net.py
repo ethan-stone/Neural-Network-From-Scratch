@@ -61,11 +61,19 @@ class NeuralNetwork():
         for i in range(len(self.layers)-1, 0, -1):
             layer_i = self.layers[i]
             predicted_i = layer_i.activations
-            error = layer_i.error
+            cache_i = layer_i.cache
+            error_i = layer_i.error
+            activation_i = layer_i.activation
             
-            delta_weights = np.dot((-error * sigmoid_der(predicted_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
+            if activation_i is "sig":
+                delta_weights = np.dot((-error_i * sigmoid_der(predicted_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
+                delta_biases = -error_i * sigmoid_der(predicted_i)
+            elif activation_i is "relu":
+                delta_weights = np.dot((-error_i * relu_der(cache_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
+                delta_biases = -error_i * relu_der(cache_i)
+                               
             layer_i.add_gradient(delta_weights)
-            delta_biases = -error * sigmoid_der(predicted_i)
+            
             if self.optimizer is "adam":
                 layer_i.adam(delta_weights, delta_biases, self.beta1, self.beta2, self.eta)
             elif self.optimizer is "rmsprop":
@@ -107,7 +115,7 @@ class NeuralNetwork():
         return correct/len(X)
     
             
-le = LabelEncoder()
+            
 ohe = OneHotEncoder(sparse=False)
 
 mnist = fetch_openml('mnist_784', version=1)
@@ -125,9 +133,10 @@ N = NeuralNetwork(eta=.001, optimizer="adam")
 N.add_layer(InputLayer(784))
 N.add_layer(Layer(128, activation='sig'))
 N.add_layer(Layer(32, activation='sig'))
+N.add_layer(Layer(16, activation='sig'))
 N.add_layer(Layer(10, activation='sig'))
 
-N.fit(X_train, y_train, epochs=20)
+N.fit(X_train, y_train, epochs=10)
 
 print(N.evaluate(X_test, y_test))
 
