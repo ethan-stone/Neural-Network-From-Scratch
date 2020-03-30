@@ -33,9 +33,9 @@ class Layer():
     def update_dim(self, input_dim):
         self.input_dim = input_dim
         if self.activation is "sig":
-            self.weights = np.random.randn(self.output_dim, self.input_dim)*(4*np.sqrt(6/(self.input_dim + self.output_dim)))
-        elif self.activation is "relu":
-            self.weights = np.random.randn(self.output_dim, self.input_dim)*(np.sqrt(2)*np.sqrt(6/(self.input_dim + self.output_dim)))
+            self.weights = np.random.randn(self.output_dim, self.input_dim)*(4*np.sqrt(2/(self.input_dim + self.output_dim)))
+        elif self.activation is "relu" or self.activation is "leaky":
+            self.weights = np.random.randn(self.output_dim, self.input_dim)*(np.sqrt(2)*np.sqrt(2/(self.input_dim + self.output_dim)))
         self.gradients = np.zeros((self.output_dim, self.input_dim))
         self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
     
@@ -86,6 +86,8 @@ class Layer():
             self.activations = sigmoid(activations)
         elif self.activation is 'relu':
             self.activations = relu(activations)
+        elif self.activation is 'leaky':
+            self.activations = leaky_relu(activations)
 
 
 

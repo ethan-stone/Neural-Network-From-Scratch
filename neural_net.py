@@ -71,6 +71,9 @@ class NeuralNetwork():
             elif activation_i is "relu":
                 delta_weights = np.dot((-error_i * relu_der(cache_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
                 delta_biases = -error_i * relu_der(cache_i)
+            elif activation_i is "leaky":
+                delta_weights = np.dot((-error_i * leaky_relu_der(cache_i)).reshape((-1, 1)), self.layers[i-1].activations.reshape((1, -1)))
+                delta_biases = -error_i * leaky_relu_der(cache_i)
                                
             layer_i.add_gradient(delta_weights)
             
@@ -131,9 +134,8 @@ y_test = np.array(y_test)
 
 N = NeuralNetwork(eta=.001, optimizer="adam")
 N.add_layer(InputLayer(784))
-N.add_layer(Layer(128, activation='sig'))
-N.add_layer(Layer(32, activation='sig'))
-N.add_layer(Layer(16, activation='sig'))
+N.add_layer(Layer(128, activation='leaky'))
+N.add_layer(Layer(16, activation='leaky'))
 N.add_layer(Layer(10, activation='sig'))
 
 N.fit(X_train, y_train, epochs=10)

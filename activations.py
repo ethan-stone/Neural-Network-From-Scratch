@@ -5,7 +5,6 @@ def sigmoid(x):
 
 
 def sigmoid_der(x):
-    # return sigmoid(x) * (1 - sigmoid(x))
     return x * (1 - x)
 
 
@@ -16,4 +15,14 @@ def relu(x):
     
 def relu_der(x):
     l = [0 if i < 0 else 1 for i in x]
+    return np.array(l)
+
+
+def leaky_relu(x):
+    l = [.01*i if i < 0 else i for i in x]
+    return np.array(l)
+
+
+def leaky_relu_der(x):
+    l = [.01 if i < 0 else 1 for i in x]
     return np.array(l)
