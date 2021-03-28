@@ -34,7 +34,7 @@ class Layer():
         self.input_dim = input_dim
         if self.activation is "sig":
             self.weights = np.random.randn(self.output_dim, self.input_dim)*(4*np.sqrt(2/(self.input_dim + self.output_dim)))
-        elif self.activation is "relu" or self.activation is "leaky":
+        elif self.activation is "relu" or self.activation is "leaky" or self.activation is "linear":
             self.weights = np.random.randn(self.output_dim, self.input_dim)*(np.sqrt(2)*np.sqrt(2/(self.input_dim + self.output_dim)))
         self.gradients = np.zeros((self.output_dim, self.input_dim))
         self.epsilon = np.full((self.output_dim, self.input_dim), 1)*(10**(-8))
@@ -77,6 +77,8 @@ class Layer():
         
     def feedforward(self, input_layer):
         input_activations = input_layer.activations
+        if isinstance(input_layer, Layer):
+            input_activations = input_activations.flatten()
         
         dot_product = np.dot(self.weights, input_activations)
         activations = np.add(dot_product, self.biases)
@@ -88,6 +90,8 @@ class Layer():
             self.activations = relu(activations)
         elif self.activation is 'leaky':
             self.activations = leaky_relu(activations)
+        elif self.activation is 'linear':
+            self.activations = linear(activations)
 
 
 
@@ -100,3 +104,45 @@ class InputLayer(Layer):
         
     def __str__(self):
         return f"InputLayer -> input_dim : {self.input_dim}"
+    
+    
+class ConvulutionalLayer():
+    def __init__(self, kernel_size=3, stride=1, padding=0, activation="relu"):
+        self.activation = activation
+        self.input_dim = 0
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.output_dim = 0
+        self.kernel = np.random.randn(self.kernel_size, self.kernel_size)
+        self.cache = np.zeros((self.output_dim, self.output_dim))
+        self.activations = np.zeros((self.output_dim, self.output_dim))
+        self.error = 0
+        
+    
+    def update_dim(self, input_dim):
+        self.input_dim = input_dim
+        self.output_dim = (self.input_dim - self.kernel_size + 2*self.padding)/self.stride + 1
+        self.cache = np.zeros((self.output_dim, self.output_dim))
+        self.activations = np.zeros((self.output_dim, self.output_dim))
+        
+        
+    def feedforward(self, input_layer):
+        input_activations = input_layer.activations
+        
+        for i in range(self.output_dim):
+            for j in range(self.output_dim):
+                chunk = input_activations[i:i+self.kernel_size, j:j+self.kernel_size]
+                feature_cache = np.multiply(self.kernel, chunk).sum()
+                
+                if self.activation is 'sig':
+                    feature = sigmoid(feature_cache)
+                elif self.activation is 'relu':
+                    feature = relu(feature_cache)
+                elif self.activation is 'leaky':
+                    feature = leaky(feature_cache)
+                elif self.activation is 'linear':
+                    feature = linear(feature_cache)
+                    
+                self.cache[i, j] = feature_cache
+                self.activations[i,j] = feature

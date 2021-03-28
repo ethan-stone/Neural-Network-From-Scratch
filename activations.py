@@ -26,3 +26,11 @@ def leaky_relu(x):
 def leaky_relu_der(x):
     l = [.01 if i < 0 else 1 for i in x]
     return np.array(l)
+
+
+def linear(x):
+    return x
+
+
+def linear_der(x):
+    return 1
